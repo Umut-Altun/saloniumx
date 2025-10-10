@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { format } from "date-fns"
 import { tr } from "date-fns/locale"
-import { Plus, Search } from "lucide-react"
+import { Plus, Search, ChevronLeft, ChevronRight } from "lucide-react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -158,20 +158,68 @@ export default function AppointmentsPage() {
               <CardDescription>Randevuları görüntülemek için bir tarih seçin</CardDescription>
             </CardHeader>
             <CardContent>
-              <CalendarComponent
-                mode="single"
-                selected={selectedDate}
-                onSelect={handleDateSelect}
-                className="rounded-md border w-full"
-                locale={tr}
-              />
-              {selectedDate && (
-                <div className="mt-4 flex justify-between items-center">
+              {/* Mobil uyumlu tarih seçici */}
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={() => handleDateSelect(new Date(selectedDate ? new Date(selectedDate).setDate(selectedDate.getDate() - 1) : Date.now()))}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
                   <div className="text-sm font-medium">
-                    Seçili tarih: {format(selectedDate, "d MMMM yyyy", { locale: tr })}
+                    {selectedDate ? format(selectedDate, "d MMMM yyyy", { locale: tr }) : "Bugün"}
                   </div>
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={() => handleDateSelect(new Date(selectedDate ? new Date(selectedDate).setDate(selectedDate.getDate() + 1) : Date.now()))}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
                 </div>
-              )}
+                
+                {/* Hızlı tarih seçimi butonları */}
+                <div className="grid grid-cols-3 gap-2 mt-3">
+                  <Button 
+                    variant={selectedDate && format(selectedDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd") ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => handleDateSelect(new Date())}
+                    className="w-full"
+                  >
+                    Bugün
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleDateSelect(new Date(new Date().setDate(new Date().getDate() + 1)))}
+                    className="w-full"
+                  >
+                    Yarın
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleDateSelect(new Date(new Date().setDate(new Date().getDate() + 2)))}
+                    className="w-full"
+                  >
+                    2 Gün Sonra
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Standart takvim (isteğe bağlı gösterilebilir) */}
+              <details className="mt-4">
+                <summary className="cursor-pointer text-sm font-medium text-primary mb-2">Takvimden Seç</summary>
+                <CalendarComponent
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={handleDateSelect}
+                  className="rounded-md border w-full"
+                  locale={tr}
+                />
+              </details>
             </CardContent>
           </Card>
         </div>
