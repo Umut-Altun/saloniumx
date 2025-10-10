@@ -715,6 +715,68 @@ export async function createSaleItem(data: any) {
   }
 }
 
+// Ürün satışı oluşturma
+export async function createProductSale(customerId: number, items: {productId: number, quantity: number}[], paymentMethod: string) {
+  try {
+    // Satış kaydı oluştur
+    const saleData = {
+      customer_id: customerId,
+      date: new Date().toISOString().split('T')[0],
+      payment_method: paymentMethod,
+      total: 0, // Başlangıçta 0, sonra hesaplanacak
+    };
+
+    const { data: sale, error: saleError } = await query('sales', 'insert', saleData);
+    if (saleError) throw saleError;
+
+    let total = 0;
+    
+    // Her ürün için satış kalemi oluştur
+    for (const item of items) {
+      // Ürün bilgilerini al
+      const { data: product, error: productError } = await supabase
+        .from('products')
+        .select('name, price')
+        .eq('id', item.productId)
+        .single();
+      
+      if (productError) throw productError;
+      
+      const itemTotal = product.price * item.quantity;
+      total += itemTotal;
+      
+      // Satış kalemi oluştur
+      const saleItemData = {
+        sale_id: sale.id,
+        item_type: 'product',
+        item_id: item.productId,
+        name: product.name,
+        quantity: item.quantity,
+        price: product.price
+      };
+      
+      const { error: saleItemError } = await query('sale_items', 'insert', saleItemData);
+      if (saleItemError) throw saleItemError;
+    }
+    
+    // Toplam tutarı güncelle
+    const { error: updateError } = await query('sales', 'update', { 
+      id: sale.id, 
+      values: { total } 
+    });
+    
+    if (updateError) throw updateError;
+    
+    return { success: true, saleId: sale.id };
+  } catch (error) {
+    console.error('Ürün satışı oluşturulurken bir hata oluştu:', error);
+    return { 
+      success: false, 
+      message: error instanceof Error ? error.message : 'Bilinmeyen bir hata oluştu' 
+    };
+  }
+}
+
 export async function updateSaleItem(id: number, values: any) {
   try {
     const { data: saleItem, error } = await query('sale_items', 'update', { id, values });

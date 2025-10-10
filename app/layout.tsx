@@ -9,8 +9,8 @@ import DbStatus from "@/components/db-status"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "BerberBook - Randevu Sistemi",
-  description: "Modern berber randevu ve yönetim sistemi",
+  title: "Salonium - Randevu Sistemi",
+  description: "Modern kuaför randevu ve yönetim sistemi",
   generator: 'v0.dev'
 }
 
